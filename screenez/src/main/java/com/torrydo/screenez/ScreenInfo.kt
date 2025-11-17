@@ -2,20 +2,21 @@ package com.torrydo.screenez
 
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
 import android.provider.Settings
 import android.util.Size
 import android.view.Display
 import android.view.Surface
+import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.Insets
-import androidx.core.view.WindowInsetsCompat
 import androidx.window.core.ExperimentalWindowApi
 import androidx.window.layout.WindowMetricsCalculator
 
 
-// base api from android 5 (api 21)
-internal open class ApiLevel21(private val context: Context) : ScreenInfoApi {
+// base api from android 6 (api 23)
+internal open class ApiLevel23(private val context: Context) : ScreenInfoApi {
 
     override fun screenSize(): Size {
         val wmc = WindowMetricsCalculator.getOrCreate()
@@ -127,7 +128,7 @@ internal open class ApiLevel21(private val context: Context) : ScreenInfoApi {
 
 // api level 30+ (android 11+)
 @OptIn(ExperimentalWindowApi::class)
-@RequiresApi(AndroidVersions.`11`)
+@RequiresApi(Build.VERSION_CODES.R)
 internal class ApiLevel30(private val context: Context) : ApiLevel29(context) {
 
     private var screenSize: Size = Size(0, 0)
@@ -135,26 +136,40 @@ internal class ApiLevel30(private val context: Context) : ApiLevel29(context) {
     private var navBarInsets: Insets = Insets.NONE
     private var statusBarInsets: Insets = Insets.NONE
     private var cutoutInsets: Insets = Insets.NONE
+    private var navBarHeight: Int = 0
+    private var statusBarHeight : Int = 0
+
 
     init {
 
         screenSize = screenSize()
 
-        val wmc = WindowMetricsCalculator.getOrCreate()
-        val maxWindowMetrics = wmc.computeMaximumWindowMetrics(this.context)
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val windowMetrics = windowManager.currentWindowMetrics
+        val windowInsets = windowMetrics.windowInsets
 
-        navBarInsets =
-            maxWindowMetrics.getWindowInsets().getInsets(WindowInsetsCompat.Type.navigationBars())
-        statusBarInsets =
-            maxWindowMetrics.getWindowInsets().getInsets(WindowInsetsCompat.Type.statusBars())
-        cutoutInsets =
-            maxWindowMetrics.getWindowInsets().getInsets(WindowInsetsCompat.Type.displayCutout())
+        navBarInsets = windowInsets.getInsets(
+            WindowInsets.Type.navigationBars()
+        ).toInsetsCompat()
+
+        statusBarInsets = windowInsets.getInsets(
+            WindowInsets.Type.statusBars()
+        ).toInsetsCompat()
+
+        cutoutInsets = windowInsets.getInsets(
+            WindowInsets.Type.displayCutout()
+        ).toInsetsCompat()
+
+
+        val insets = windowMetrics.windowInsets
+
+        statusBarHeight = insets.getInsets(WindowInsets.Type.statusBars()).top
+        navBarHeight = insets.getInsets(WindowInsets.Type.navigationBars()).bottom
     }
 
-    // context.display throw error. the deprecated solution still worked somehow. Argggggg Im cryinggg huhu !!!
-//    override fun getDisplay(): Display? {
-//        return context.display
-//    }
+    private fun android.graphics.Insets.toInsetsCompat(): Insets {
+        return Insets.of(this.left, this.top, this.right, this.bottom)
+    }
 
     override fun navBarPadding(): ScreenPadding {
         return ScreenPadding.fromInsets(navBarInsets)
@@ -168,19 +183,13 @@ internal class ApiLevel30(private val context: Context) : ApiLevel29(context) {
         return ScreenPadding.fromInsets(cutoutInsets)
     }
 
-//        override fun getScreenSize(context: Context): Size {
-//            val wm = context.getSystemService(WindowManager::class.java)
-//            val metrics: WindowMetrics = wm.currentWindowMetrics
-//
-////            val d = metrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
-////            val cutouts = metrics.windowInsets.getInsets(WindowInsets.Type.displayCutout())
-////
-////
-////            Log.d("<>", "1d: $d");
-////            Log.d("<>", "1cutout: $cutouts");
-//
-//            return Size(metrics.bounds.width(), metrics.bounds.height())
-//        }
+    override fun navBarHeight(): Int {
+        return navBarHeight
+    }
+
+    override fun statusBarHeight(): Int {
+        return statusBarHeight
+    }
 }
 
 // api level 29 (android 10)
@@ -232,7 +241,7 @@ internal open class ApiLevel28(private val context: Context) : ApiLevel25(contex
 
 // api level 25 (android 7.1)
 @RequiresApi(AndroidVersions.`7_1`)
-internal open class ApiLevel25(private val context: Context) : ApiLevel21(context) {
+internal open class ApiLevel25(private val context: Context) : ApiLevel23(context) {
 
     // starting with Android 7.1 the nav bar may also be located on the LEFT side of the screen
     // On Huawei P30 pro , when Surface.ROTATION_90 and Surface.ROTATION_270 , navigation bar on the right.
@@ -252,23 +261,3 @@ internal open class ApiLevel25(private val context: Context) : ApiLevel21(contex
     }
 
 }
-
-// get orientation change from landscape to landscape
-//     DisplayManager.DisplayListener mDisplayListener = new DisplayManager.DisplayListener() {
-//        @Override
-//        public void onDisplayAdded(int displayId) {
-//           android.util.Log.i(TAG, "Display #" + displayId + " added.");
-//        }
-//
-//        @Override
-//        public void onDisplayChanged(int displayId) {
-//           android.util.Log.i(TAG, "Display #" + displayId + " changed.");
-//        }
-//
-//        @Override
-//        public void onDisplayRemoved(int displayId) {
-//           android.util.Log.i(TAG, "Display #" + displayId + " removed.");
-//        }
-//     };
-//     DisplayManager displayManager = (DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
-//     displayManager.registerDisplayListener(mDisplayListener, UIThreadHandler);

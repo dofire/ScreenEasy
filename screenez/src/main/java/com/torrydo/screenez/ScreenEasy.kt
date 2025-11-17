@@ -46,11 +46,11 @@ class ScreenEasy {
      * */
     fun refresh() {
         _screenInfo = when {
-            Build.VERSION.SDK_INT >= AndroidVersions.`11` -> ApiLevel30(context)    // android 11+
-            Build.VERSION.SDK_INT >= AndroidVersions.`10` -> ApiLevel29(context)    // android 10
-            Build.VERSION.SDK_INT >= AndroidVersions.`9` -> ApiLevel28(context)     // android 9
-            Build.VERSION.SDK_INT >= AndroidVersions.`7_1` -> ApiLevel25(context)   // android 7_1, 8, 8_1
-            else -> ApiLevel21(context)                                             // android 5, 6, 7
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> ApiLevel30(context)  // Android 11+
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> ApiLevel29(context)  // Android 10
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> ApiLevel28(context)  // Android 9
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 -> ApiLevel25(context) // Android 7.1, 8, 8.1
+            else -> ApiLevel23(context)  // Android 5, 6, 7
         }
 
 //        Log.d("<>", "==========================: ");
