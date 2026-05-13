@@ -1,17 +1,16 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
     id("org.jetbrains.kotlin.plugin.compose") version "2.2.21"  // match your Kotlin version
 }
 
 android {
     namespace 'com.torrydo.screenez_test'
-    compileSdk =  36
+    compileSdk = 37
 
     defaultConfig {
         applicationId "com.torrydo.screenez_test"
         minSdk 23
-        targetSdk 36
+        targetSdk 37
         versionCode 1
         versionName "1.0"
 
@@ -30,9 +29,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
     }
     buildFeatures {
         compose true
